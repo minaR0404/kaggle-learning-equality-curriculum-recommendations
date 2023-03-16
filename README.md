@@ -18,7 +18,9 @@ Then the **Reranking model** sorts the candidates to narrow down to the more acc
 
 **Retriever model :** sentence-transformers/all-MiniLM-L6-v2
 
-**Reranking model :** Trained model from stage1
+**Reranking model :** Trained model from Retriever model
+
+There are 4 steps to create the final submission file.
 
 ## CV Strategy
 Using KFold, we divided the train data into four. We split fold 0 as evaluation data and folds 1-3 as training data.
@@ -32,7 +34,7 @@ For the topic and content sentences, the token preprocessing was done as follows
 
 All the titles and descriptions are included in the features, and the breadcrumbs and text are truncated according to the limit.
 
-## Stage1: Retriever
+## Step1: Retriever
 We pretrained models from sentence-transformer library, and we used MultipleNegativesRankingLoss. It took 6 hours to train the model.
 
 **Model :** sentence-transformers/all-MiniLM-L6-v2  
@@ -46,9 +48,12 @@ Recall@50 score resulted in:
 - 0.870 for whole data  
 - 0.814 for valid data
 
-## Stage2: Reranking
+## Step2: Clustering
 Calculate a vector for each content and use KNN to create the top 50 candidates.  
-Using the stage 1 model, we train the model so that the F2 score increases while changing the order of the candidates.
+Using embeddings and select candidate @50 for each topic with close vector distance, save to csv file.
+
+## Step3: Reranking 
+Using the step1 model, we train the model so that the F2 score increases while changing the order of the candidates.
 It took 30 hours.  
 Probably because this part was wrong, it seems that the score did not improve.  
 Later I will check other people's solutions again and study better methods.
@@ -62,8 +67,8 @@ Later I will check other people's solutions again and study better methods.
 The F2 score is  
 - 0.476 CV
 
-## Inference
-Use the threshold got when reranking in stage 2 to make inferences on the test data.  
+## Step4: Inference
+Use the threshold got when reranking in step3 to make inferences on the test data.  
 There is a difference of about 0.3 between CV and LB.
 However, since everyone's scores increased by 0.3 to 0.4, it means that the remaining 70% of the test data was predicted well.
 
